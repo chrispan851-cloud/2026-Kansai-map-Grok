@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 京都・大阪 6天互動地圖｜Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; }
+        .map-container { height: calc(100vh - 155px); }
+        .day-tab { transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .day-tab.active { background-color: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 10px 15px -3px rgb(239 68 68 / 0.3); }
+        .category-tab { transition: all 0.2s; }
+        .category-tab.active { background-color: #6366f1; color: white; border-color: #6366f1; }
+        .leaflet-popup-content-wrapper { border-radius: 20px; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); padding: 0; overflow: hidden; }
+        .rich-popup { max-width: 340px; }
+    </style>
+</head>
+<body class="bg-zinc-950 text-white">
+    <!-- Header -->
+    <div class="bg-zinc-900 border-b border-zinc-800 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-x-3">
+            <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-2xl flex items-center justify-center">
+                <span class="text-2xl">🗺️</span>
+            </div>
+            <div>
+                <div class="font-bold text-2xl tracking-tight">2026 京都・大阪</div>
+                <div class="text-xs text-zinc-400 -mt-1">Premium 完整版</div>
+            </div>
+        </div>
+        
+        <button onclick="focusOnHotel()" class="flex items-center gap-x-2 bg-zinc-800 hover:bg-zinc-700 px-5 py-2.5 rounded-3xl text-sm font-medium transition-all active:scale-[0.985]">
+            <span>🏨</span>
+            <span>跳轉飯店</span>
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-zinc-900 px-3 py-3 border-b border-zinc-800">
+        <!-- Day Filter -->
+        <div class="flex gap-2 overflow-x-auto pb-2">
+            <button onclick="filterDay('all')" class="day-tab active px-6 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">全部</button>
+            <button onclick="filterDay(1)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 1</button>
+            <button onclick="filterDay(2)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 2</button>
+            <button onclick="filterDay(3)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 3</button>
+            <button onclick="filterDay(4)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 4</button>
+            <button onclick="filterDay(5)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 5</button>
+            <button onclick="filterDay(6)" class="day-tab px-5 py-2 text-sm font-medium rounded-3xl border border-zinc-700 whitespace-nowrap">Day 6</button>
+        </div>
+        
+        <!-- Category Filter -->
+        <div class="flex gap-2 overflow-x-auto pt-1">
+            <button onclick="filterCategory('all')" class="category-tab active px-4 py-1.5 text-xs font-medium rounded-2xl border border-zinc-700">全部</button>
+            <button onclick="filterCategory('文化')" class="category-tab px-4 py-1.5 text-xs font-medium rounded-2xl border border-zinc-700">文化</button>
+            <button onclick="filterCategory('美食')" class="category-tab px-4 py-1.5 text-xs font-medium rounded-2xl border border-zinc-700">美食</button>
+            <button onclick="filterCategory('購物')" class="category-tab px-4 py-1.5 text-xs font-medium rounded-2xl border border-zinc-700">購物</button>
+            <button onclick="filterCategory('自然')" class="category-tab px-4 py-1.5 text-xs font-medium rounded-2xl border border-zinc-700">自然</button>
+        </div>
+    </div>
+
+    <div id="map" class="map-container"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', { zoomControl: true, attributionControl: false }).setView([35.0, 135.5], 9);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        // 完整版地點（從手冊精選 + 精準座標）
+        const locations = [
+            // Day 1
+            { day: 1, category: "文化", time: "16:15", name: "伏見稻荷大社", lat: 34.9669, lng: 135.7731, desc: "千本鳥居經典，傍晚氛圍最佳",体力: "中等", tip: "建議走奧社奉拜所後折返" },
+            { day: 1, category: "文化", time: "18:30", name: "祇園 / 鴨川", lat: 35.0033, lng: 135.7717, desc: "藝妓街與河畔散步",体力: "輕鬆", tip: "傍晚最有氣氛" },
+            { day: 1, category: "文化", time: "19:00", name: "二年坂・三年坂・八坂之塔", lat: 34.9975, lng: 135.7758, desc: "古街散策，適合雨天",体力: "輕鬆", tip: "塌塌米星巴克必打卡" },
+            
+            // Day 2
+            { day: 2, category: "自然", time: "09:30", name: "貴船神社", lat: 35.1224, lng: 135.7628, desc: "森林浴與水占卜",体力: "中等", tip: "雨中更美" },
+            { day: 2, category: "文化", time: "13:00", name: "出町柳鴨川三角洲", lat: 35.0303, lng: 135.7683, desc: "跳烏龜與河畔散步",体力: "輕鬆", tip: "像當地人一樣玩" },
+            { day: 2, category: "文化", time: "15:30", name: "金閣寺", lat: 35.0395, lng: 135.7294, desc: "世界遺產，下午陽光最美",体力: "輕鬆", tip: "記得看屋頂鳳凰" },
+            { day: 2, category: "購物", time: "19:30", name: "京都車站夜景", lat: 34.9855, lng: 135.7580, desc: "燈光秀 + Sky Garden",体力: "輕鬆", tip: "Skyway 拍照超美" },
+            
+            // Day 3
+            { day: 3, category: "自然", time: "10:00", name: "嵐山竹林小徑", lat: 35.0092, lng: 135.6673, desc: "翡翠隧道，早上去人少",体力: "輕鬆", tip: "小火車後直接走" },
+            { day: 3, category: "文化", time: "10:40", name: "天龍寺", lat: 35.0098, lng: 135.6655, desc: "世界遺產枯山水庭園",体力: "輕鬆", tip: "北門進正門出" },
+            { day: 3, category: "文化", time: "11:30", name: "渡月橋", lat: 35.0103, lng: 135.6683, desc: "嵐山經典河景",体力: "輕鬆", tip: "河邊咖啡廳很多" },
+            
+            // Day 4
+            { day: 4, category: "文化", time: "10:40", name: "平等院（宇治）", lat: 34.8894, lng: 135.8078, desc: "國寶鳳凰堂 + 抹茶街",体力: "輕鬆", tip: "10元硬幣上的建築" },
+            { day: 4, category: "文化", time: "12:30", name: "任天堂博物館", lat: 34.8928, lng: 135.7842, desc: "全室內互動遊戲體驗",体力: "輕鬆", tip: "巨大控制器超好玩" },
+            { day: 4, category: "文化", time: "14:30", name: "勝尾寺", lat: 34.8725, lng: 135.6500, desc: "滿山達摩祈福寺",体力: "中等", tip: "畫達摩求勝利" },
+            
+            // Day 5
+            { day: 5, category: "文化", time: "10:00", name: "難波八坂神社", lat: 34.6687, lng: 135.5014, desc: "巨大獅子頭打卡",体力: "輕鬆", tip: "晚上眼睛會發光" },
+            { day: 5, category: "購物", time: "11:00", name: "心齋橋筋", lat: 34.6703, lng: 135.5010, desc: "全天候購物長廊",体力: "輕鬆", tip: "雨天最佳選擇" },
+            { day: 5, category: "美食", time: "12:00", name: "道頓堀", lat: 34.6688, lng: 135.5017, desc: "美食與霓虹招牌",体力: "輕鬆", tip: "螃蟹道樂必看" },
+            
+            // Day 6
+            { day: 6, category: "購物", time: "10:00", name: "臨空城 Premium Outlets", lat: 34.4092, lng: 135.2990, desc: "海景購物最終採購",体力: "中等", tip: "Sea Side 區最美" },
+            
+            // 住宿 + 額外推薦
+            { day: 0, category: "住宿", time: "住宿", name: "梅小路皇家公園酒店（京都）", lat: 34.9885, lng: 135.7425, desc: "Day 1-3 住宿",体力: "輕鬆", tip: "飯店旁就有便利商店" },
+            { day: 0, category: "住宿", time: "住宿", name: "大阪四季靱公園酒店", lat: 34.6836, lng: 135.4890, desc: "Day 4-6 住宿",体力: "輕鬆", tip: "梅田超近" },
+            
+            // 手冊精選額外地點
+            { day: 1, category: "美食", time: "隨時", name: "稻彥咖啡 & 雙色冰淇淋", lat: 34.9665, lng: 135.7735, desc: "伏見稻荷旁人氣咖啡",体力: "輕鬆", tip: "雙色冰淇淋必點" },
+            { day: 2, category: "美食", time: "隨時", name: "川床星巴克", lat: 35.0040, lng: 135.7720, desc: "鴨川畔特色星巴克",体力: "輕鬆", tip: "夏天很涼爽" },
+            { day: 1, category: "美食", time: "晚餐", name: "三嶋亭壽喜燒", lat: 35.0035, lng: 135.7710, desc: "老字號高級壽喜燒",体力: "輕鬆", tip: "適合慶祝場合" },
+            { day: 6, category: "自然", time: "隨時", name: "臨空之湯", lat: 34.4105, lng: 135.2985, desc: "看海景的溫泉",体力: "輕鬆", tip: "登機前超放鬆" }
+        ];
+
+        let markers = [];
+        let currentFilter = { day: 'all', category: 'all' };
+
+        function createMarkers(filtered) {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+
+            filtered.forEach(loc => {
+                const isHotel = loc.day === 0;
+                const marker = L.circleMarker([loc.lat, loc.lng], {
+                    radius: isHotel ? 12 : 9,
+                    fillColor: isHotel ? '#6366f1' : '#ef4444',
+                    color: '#fff',
+                    weight: 3
+                }).addTo(map);
+
+                const popupHTML = `
+                    <div class="rich-popup p-5 ${isHotel ? 'bg-gradient-to-br from-blue-900 to-zinc-900' : 'bg-zinc-900'} text-white">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <div class="text-xs opacity-70">${loc.time}</div>
+                                <div class="font-bold text-xl leading-tight">${loc.name}</div>
+                            </div>
+                            <div class="text-xs px-3 py-1 bg-white/20 rounded-full self-start">${loc.体力}</div>
+                        </div>
+                        
+                        <div class="text-sm opacity-85 mb-4">${loc.desc}</div>
+                        
+                        ${loc.tip ? `<div class="text-xs bg-white/10 px-3 py-2 rounded-xl mb-4">💡 ${loc.tip}</div>` : ''}
+                        
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" class="flex items-center justify-center gap-2 bg-white/90 hover:bg-white text-zinc-900 font-medium py-3.5 rounded-2xl text-sm active:scale-[0.985]">🗺️ 導航</a>
+                            <a href="https://www.google.com/maps/search/restaurant/@${loc.lat},${loc.lng},17z" target="_blank" class="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-medium py-3.5 rounded-2xl text-sm active:scale-[0.985]">🍜 附近餐廳</a>
+                            <a href="https://www.google.com/maps/search/convenience+store/@${loc.lat},${loc.lng},17z" target="_blank" class="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-medium py-3.5 rounded-2xl text-sm active:scale-[0.985]">🏪 便利商店</a>
+                            <a href="https://www.google.com/maps/search/supermarket/@${loc.lat},${loc.lng},17z" target="_blank" class="flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3.5 rounded-2xl text-sm active:scale-[0.985]">🛒 附近超市</a>
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupHTML, { maxWidth: 340 });
+                markers.push(marker);
+            });
+        }
+
+        function filterDay(day) {
+            currentFilter.day = day;
+            document.querySelectorAll('.day-tab').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        }
+
+        function filterCategory(category) {
+            currentFilter.category = category;
+            document.querySelectorAll('.category-tab').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filtered = locations;
+            
+            if (currentFilter.day !== 'all') {
+                filtered = filtered.filter(l => l.day === currentFilter.day || l.day === 0);
+            }
+            
+            if (currentFilter.category !== 'all') {
+                filtered = filtered.filter(l => l.category === currentFilter.category);
+            }
+            
+            createMarkers(filtered);
+        }
+
+        function focusOnHotel() {
+            const hotel = locations.find(l => l.day === 0);
+            map.flyTo([hotel.lat, hotel.lng], 16, { duration: 1.3 });
+            
+            setTimeout(() => {
+                markers.forEach(m => {
+                    if (m.getLatLng().lat === hotel.lat && m.getLatLng().lng === hotel.lng) {
+                        m.openPopup();
+                    }
+                });
+            }, 1400);
+        }
+
+        // 初始化
+        createMarkers(locations);
+        
+        setTimeout(() => {
+            const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
+            map.fitBounds(bounds, { padding: [45, 45] });
+        }, 700);
+
+        // 鍵盤快捷鍵
+        document.addEventListener('keydown', function(e) {
+            if (e.key.toLowerCase() === 'h') focusOnHotel();
+            if (e.key === 'Escape') map.closePopup();
+        });
+        
+        console.log('%c[Premium Map] 完整加強版已載入完成', 'color:#22c55e');
+    </script>
+</body>
+</html>
