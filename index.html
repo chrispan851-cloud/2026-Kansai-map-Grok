@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 京都・大阪 6天互動地圖（已調整）</title>
+    <title>2026 京都・大阪 6天互動地圖（日本搜尋加強版）</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 0; background: #f8f9fa; }
@@ -12,20 +12,19 @@
         .filter-bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; background: white; }
         .filter-btn { padding: 8px 16px; border: 2px solid #ddd; border-radius: 20px; background: white; font-size: 14px; cursor: pointer; }
         .filter-btn.active { background: #e74c3c; color: white; border-color: #e74c3c; }
-        .popup-content { min-width: 260px; }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>🗺️ 2026 京都・大阪 6天互動地圖（已調整）</h1>
-        <p style="margin: 8px 0 0 0; opacity: 0.9;">Day 2 ↔ Day 3 已對調（避開嵐山小火車週三沒開）</p>
+        <h1>🗺️ 2026 京都・大阪 6天互動地圖</h1>
+        <p style="margin:5px 0 0 0; opacity:0.9;">搜尋已加強為日本店家（使用日文關鍵字）</p>
     </div>
     
     <div class="filter-bar">
         <button class="filter-btn active" onclick="filterDay('all')">全部</button>
         <button class="filter-btn" onclick="filterDay(1)">Day 1</button>
-        <button class="filter-btn" onclick="filterDay(2)">Day 2（新）</button>
-        <button class="filter-btn" onclick="filterDay(3)">Day 3（新）</button>
+        <button class="filter-btn" onclick="filterDay(2)">Day 2</button>
+        <button class="filter-btn" onclick="filterDay(3)">Day 3</button>
         <button class="filter-btn" onclick="filterDay(4)">Day 4</button>
         <button class="filter-btn" onclick="filterDay(5)">Day 5</button>
         <button class="filter-btn" onclick="filterDay(6)">Day 6</button>
@@ -38,35 +37,21 @@
         const map = L.map('map').setView([35.0, 135.5], 9);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        // 已對調 Day 2 和 Day 3
         const locations = [
-            // Day 1
-            {day:1, name:"伏見稻荷大社", lat:34.9669, lng:135.7731, desc:"千本鳥居",体力:"🚶🚶 中等"},
-            {day:1, name:"祇園白川", lat:35.0039, lng:135.7715, desc:"傳統街景",体力:"🚶 輕鬆"},
-            
-            // 新 Day 2（原本 Day 3 - 嵐山）
-            {day:2, name:"嵐山小火車 龜岡站", lat:35.0098, lng:135.6655, desc:"小火車起點",体力:"🚶 輕鬆"},
-            {day:2, name:"竹林步道", lat:35.0098, lng:135.6655, desc:"著名竹林",体力:"🚶 輕鬆"},
-            {day:2, name:"天龍寺", lat:35.0098, lng:135.6655, desc:"世界遺產",体力:"🚶 輕鬆"},
-            {day:2, name:"渡月橋", lat:35.0098, lng:135.6655, desc:"嵐山地標",体力:"🚶 輕鬆"},
-            
-            // 新 Day 3（原本 Day 2 - 北山）
-            {day:3, name:"貴船神社", lat:35.1224, lng:135.7628, desc:"森林中的神社",体力:"🚶🚶 中等"},
-            {day:3, name:"金閣寺", lat:35.0395, lng:135.7294, desc:"金色寺廟",体力:"🚶 輕鬆"},
-            {day:3, name:"出町柳", lat:35.0305, lng:135.7680, desc:"跳烏龜",体力:"🚶 輕鬆"},
-            {day:3, name:"京都車站", lat:34.9858, lng:135.7588, desc:"夜景 + 晚餐",体力:"🚶 輕鬆"},
-            
-            // Day 4
-            {day:4, name:"平等院", lat:34.8894, lng:135.8078, desc:"宇治",体力:"🚶 輕鬆"},
-            {day:4, name:"任天堂博物館", lat:34.8928, lng:135.7842, desc:"遊戲歷史",体力:"🚶 輕鬆"},
-            {day:4, name:"勝尾寺", lat:34.8928, lng:135.7842, desc:"紅葉名所",体力:"🚶🚶 中等"},
-            
-            // Day 5
-            {day:5, name:"道頓堀", lat:34.6680, lng:135.5015, desc:"巨獅 + 美食",体力:"🚶 輕鬆"},
-            {day:5, name:"大阪城", lat:34.6873, lng:135.5262, desc:"夜景備案",体力:"🚶 輕鬆"},
-            
-            // Day 6
-            {day:6, name:"臨空城 Outlet", lat:34.4092, lng:135.2990, desc:"最後採購",体力:"🚶 輕鬆"}
+            {day:1, name:"伏見稻荷大社", lat:34.9669, lng:135.7731, desc:"千本鳥居"},
+            {day:1, name:"祇園白川", lat:35.0039, lng:135.7715, desc:"傳統街景"},
+            {day:2, name:"嵐山小火車 龜岡站", lat:35.0098, lng:135.6655, desc:"小火車起點"},
+            {day:2, name:"竹林步道", lat:35.0098, lng:135.6655, desc:"著名竹林"},
+            {day:2, name:"天龍寺", lat:35.0098, lng:135.6655, desc:"世界遺產"},
+            {day:2, name:"渡月橋", lat:35.0098, lng:135.6655, desc:"嵐山地標"},
+            {day:3, name:"貴船神社", lat:35.1224, lng:135.7628, desc:"森林神社"},
+            {day:3, name:"金閣寺", lat:35.0395, lng:135.7294, desc:"金色寺廟"},
+            {day:3, name:"出町柳", lat:35.0305, lng:135.7680, desc:"跳烏龜"},
+            {day:3, name:"京都車站", lat:34.9858, lng:135.7588, desc:"夜景"},
+            {day:4, name:"平等院", lat:34.8894, lng:135.8078, desc:"宇治"},
+            {day:4, name:"任天堂博物館", lat:34.8928, lng:135.7842, desc:"遊戲歷史"},
+            {day:5, name:"道頓堀", lat:34.6680, lng:135.5015, desc:"美食街"},
+            {day:6, name:"臨空城 Outlet", lat:34.4092, lng:135.2990, desc:"採購"}
         ];
 
         let markers = [];
@@ -77,37 +62,33 @@
             
             filtered.forEach(loc => {
                 const marker = L.circleMarker([loc.lat, loc.lng], {
-                    radius: 9,
-                    fillColor: '#e74c3c',
-                    color: 'white',
-                    weight: 2
+                    radius: 9, fillColor: '#e74c3c', color: 'white', weight: 2
                 }).addTo(map);
 
+                // 使用日文關鍵字 + gl=JP，強制顯示日本店家
                 const popup = `
-                    <div class="popup-content">
-                        <b>${loc.name}</b><br>
-                        <small>${loc.desc} ｜ ${loc.体力}</small><br><br>
-                        
-                        <a href="https://www.google.com/maps/search/?api=1&query=convenience+store+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
-                           style="display:block; background:#27ae60; color:white; padding:8px; text-align:center; border-radius:6px; margin:4px 0; text-decoration:none;">
-                           🏪 附近便利商店（日本）
-                        </a>
-                        
-                        <a href="https://www.google.com/maps/search/?api=1&query=supermarket+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
-                           style="display:block; background:#16a085; color:white; padding:8px; text-align:center; border-radius:6px; margin:4px 0; text-decoration:none;">
-                           🛒 附近超市（日本）
-                        </a>
-                        
-                        <a href="https://www.google.com/maps/search/?api=1&query=restaurant+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
-                           style="display:block; background:#e67e22; color:white; padding:8px; text-align:center; border-radius:6px; margin:4px 0; text-decoration:none;">
-                           🍜 附近餐廳（日本）
-                        </a>
-                        
-                        <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" 
-                           style="display:block; background:#3498db; color:white; padding:8px; text-align:center; border-radius:6px; margin:4px 0; text-decoration:none;">
-                           🗺️ Google Maps 導航
-                        </a>
-                    </div>
+                    <b>${loc.name}</b><br>
+                    <small>${loc.desc}</small><br><br>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=コンビニ+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
+                       style="display:block; background:#27ae60; color:white; padding:9px; text-align:center; border-radius:6px; margin:5px 0; text-decoration:none; font-size:14px;">
+                       🏪 附近便利商店（日本）
+                    </a>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=スーパー+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
+                       style="display:block; background:#16a085; color:white; padding:9px; text-align:center; border-radius:6px; margin:5px 0; text-decoration:none; font-size:14px;">
+                       🛒 附近超市（日本）
+                    </a>
+                    
+                    <a href="https://www.google.com/maps/search/?api=1&query=レストラン+near+${loc.lat},${loc.lng}&gl=JP&hl=ja" target="_blank" 
+                       style="display:block; background:#e67e22; color:white; padding:9px; text-align:center; border-radius:6px; margin:5px 0; text-decoration:none; font-size:14px;">
+                       🍜 附近餐廳（日本）
+                    </a>
+                    
+                    <a href="https://www.google.com/maps/dir/?api=1&destination=${loc.lat},${loc.lng}" target="_blank" 
+                       style="display:block; background:#3498db; color:white; padding:9px; text-align:center; border-radius:6px; margin:5px 0; text-decoration:none; font-size:14px;">
+                       🗺️ Google Maps 導航
+                    </a>
                 `;
                 
                 marker.bindPopup(popup);
@@ -120,12 +101,10 @@
         window.filterDay = function(day) {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
-            
             let filtered = (day === 'all') ? locations : locations.filter(l => l.day === day);
             createMarkers(filtered);
         };
 
-        // 自動縮放
         setTimeout(() => {
             const bounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
             map.fitBounds(bounds, {padding: [40, 40]});
